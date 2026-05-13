@@ -96,14 +96,14 @@ async function findRecurringBugs(currentBugs) {
 }
 
 app.post('/api/generate-report', async (req, res) => {
-    const { projectName, phase, startDate, endDate, qaName, bugListText } = req.body;
+    const { projectName, phase, startDate, endDate, qaName, bugList } = req.body;
 
-    if (!projectName || !phase || !bugListText) {
+    if (!projectName || !phase || !bugList) {
         return res.status(400).json({ error: 'Missing required fields' });
     }
 
     try {
-        const reportData = parseBugs(bugListText);
+        const reportData = parseBugs(bugList);
         const recurringIssues = await findRecurringBugs(reportData.bugs);
         const htmlContent = generateHTML(projectName, phase, startDate, endDate, qaName, reportData, recurringIssues);
 
@@ -119,7 +119,7 @@ app.post('/api/generate-report', async (req, res) => {
                 total_issues: reportData.bugs.length,
                 severity_breakdown: reportData.matrix.total,
                 bugs: reportData.bugs,
-                raw_text: bugListText,
+                raw_text: bugList,
                 timestamp: new Date().toISOString()
             }]);
 
