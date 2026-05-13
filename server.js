@@ -340,9 +340,43 @@ app.get('/api/records', async (req, res) => {
     res.json(tree);
 });
 
-app.get('/api/records/:id', async (req, res) => {
-    const { data } = await supabase.from('reports').select('*').eq('id', req.params.id).single();
-    res.json({ projectName: data.project_name, phase: data.phase, rawText: data.raw_text, bugs: data.bugs, htmlContent: data.html_content, timestamp: data.timestamp });
+app.get('/api/find-repeated', async (req, res) => {
+    try {
+        const { data: reports } = await supabase.from('reports').select('project_name, phase, timestamp, bugs').order('timestamp', { ascending: false });
+        if (!reports) return res.json([]);
+
+        const bugMap = new Map();
+
+        reports.forEach(report => {
+            if (report.bugs && Array.isArray(report.bugs)) {
+                report.bugs.forEach(bug => {
+                    const title = bug.title.toLowerCase().trim();
+                    if (!bugMap.has(title)) {
+                        bugMap.set(title, { 
+                            title: bug.title, 
+                            count: 0, 
+                            occurrences: [] 
+                        });
+                    }
+                    const entry = bugMap.get(title);
+                    entry.count++;
+                    entry.occurrences.push({
+                        project: report.project_name,
+                        phase: report.phase,
+                        date: report.timestamp
+                    });
+                });
+            }
+        });
+
+        const repeated = Array.from(bugMap.values())
+            .filter(b => b.count > 1)
+            .sort((a, b) => b.count - a.count);
+
+        res.json(repeated);
+    } catch (e) {
+        res.status(500).json({ error: 'Failed' });
+    }
 });
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

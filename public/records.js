@@ -121,6 +121,40 @@ async function loadRepeatedAnalysis() {
     }
 }
 
+async function viewBugs(project, phase, id) {
+    const modal = document.getElementById('bugModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+    
+    if (!modal || !modalBody) return;
+
+    modalTitle.innerText = `${project.replace(/_/g, ' ')} - ${phase.replace(/_/g, ' ')}`;
+    modalBody.innerHTML = '<div class="loader"></div>';
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+
+    try {
+        const response = await fetch(`/api/records/${id}`);
+        const data = await response.json();
+        
+        if (data.htmlContent) {
+            // Use an iframe to safely render the report and avoid style leaks
+            modalBody.innerHTML = `
+                <iframe id="reportFrame" style="width:100%; height:80vh; border:none; background:white; border-radius:8px;"></iframe>
+            `;
+            const frame = document.getElementById('reportFrame');
+            const doc = frame.contentWindow.document;
+            doc.open();
+            doc.write(data.htmlContent);
+            doc.close();
+        } else {
+            modalBody.innerHTML = '<div class="error">Report content not found.</div>';
+        }
+    } catch (error) {
+        modalBody.innerHTML = '<div class="error">Failed to load report details.</div>';
+    }
+}
+
 function closeModal() {
     document.getElementById('bugModal').classList.remove('active');
     document.body.style.overflow = 'auto';
