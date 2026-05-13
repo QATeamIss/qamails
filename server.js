@@ -21,44 +21,55 @@ app.use(express.static('public'));
 const OUTPUT_DIR = path.resolve(__dirname, '..');
 
 function getSimilarity(s1, s2) {
-    // Normalization: Lowercase, remove special chars, trim common prefixes
+    // Stop words and generic phrases to ignore
+    const stopWords = new Set(['unable', 'to', 'is', 'not', 'working', 'the', 'a', 'an', 'and', 'for', 'in', 'on', 'with', 'issue', 'bug']);
+    
     const normalize = (str) => {
         return str.toLowerCase()
-            .replace(/^(bug|issue|defect|ticket|task)\s*[:#-]*\s*/i, '') // Remove common prefixes
-            .replace(/[^a-z0-9\s]/g, ' ') // Replace punctuation with space
-            .replace(/\s+/g, ' ') // Collapse multiple spaces
+            .replace(/^(bug|issue|defect|ticket|task)\s*[:#-]*\s*/i, '')
+            .replace(/[^a-z0-9\s]/g, ' ')
+            .replace(/\s+/g, ' ')
             .trim();
+    };
+
+    const getKeywords = (str) => {
+        return normalize(str).split(' ').filter(word => word.length > 1 && !stopWords.has(word));
     };
 
     const s1_norm = normalize(s1);
     const s2_norm = normalize(s2);
+    const kw1 = getKeywords(s1);
+    const kw2 = getKeywords(s2);
 
     if (s1_norm === s2_norm) return 1.0;
-    if (s1_norm.length < 3 || s2_norm.length < 3) return 0;
+    
+    // 1. Keyword Overlap (Most important for "Technically Same")
+    const set1 = new Set(kw1);
+    const set2 = new Set(kw2);
+    const intersect = kw1.filter(w => set2.has(w));
+    const unionSize = new Set([...kw1, ...kw2]).size;
+    const keywordSim = unionSize > 0 ? (intersect.length / unionSize) : 0;
 
-    // 1. Character-level similarity (Dice's Coefficient) - Good for typos
+    // 2. Character-level bigrams (For typos)
     const getBigrams = (str) => {
         const bigrams = new Set();
-        for (let i = 0; i < str.length - 1; i++) {
-            bigrams.add(str.substring(i, i + 2));
+        const clean = str.replace(/\s/g, '');
+        for (let i = 0; i < clean.length - 1; i++) {
+            bigrams.add(clean.substring(i, i + 2));
         }
         return bigrams;
     };
 
     const b1 = getBigrams(s1_norm);
     const b2 = getBigrams(s2_norm);
-    const intersect = new Set([...b1].filter(x => b2.has(x)));
-    const charSim = (2.0 * intersect.size) / (b1.size + b2.size);
+    const charIntersect = new Set([...b1].filter(x => b2.has(x)));
+    const charSim = (b1.size + b2.size) > 0 ? (2.0 * charIntersect.size) / (b1.size + b2.size) : 0;
 
-    // 2. Word-level similarity (Jaccard Index) - Good for shifted wording
-    const w1 = new Set(s1_norm.split(' '));
-    const w2 = new Set(s2_norm.split(' '));
-    const wordIntersect = new Set([...w1].filter(x => w2.has(x)));
-    const wordSim = wordIntersect.size / Math.max(w1.size, w2.size);
-
-    // Final Score: Weighted average (60% word-level, 40% char-level)
-    return (wordSim * 0.6) + (charSim * 0.4);
+    // Final Score: If keywords match significantly, weight it very high
+    // Even a 50% keyword match with some character overlap should trigger a warning
+    return (keywordSim * 0.7) + (charSim * 0.3);
 }
+
 
 async function findRecurringBugs(currentBugs) {
     const recurring = [];
@@ -83,7 +94,7 @@ async function findRecurringBugs(currentBugs) {
     });
 
     currentBugs.forEach(bug => {
-        const matches = allHistoricalBugs.filter(h => getSimilarity(bug.title, h.title) > 0.8);
+        const matches = allHistoricalBugs.filter(h => getSimilarity(bug.title, h.title) > 0.65);
         if (matches.length > 0) {
             recurring.push({
                 title: bug.title,
