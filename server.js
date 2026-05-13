@@ -53,7 +53,6 @@ function parseBugs(text) {
         const type = typeMatch ? typeMatch[1].trim() : 'Bug';
         let category = categoryMatch ? categoryMatch[1].trim() : 'Functional Bugs';
 
-        // Map to standard categories
         if (category.toLowerCase().includes('ui') || category.toLowerCase().includes('html')) category = 'HTML / UI Bugs';
         else if (category.toLowerCase().includes('enhancement')) category = 'Enhancements';
         else if (category.toLowerCase().includes('correction')) category = 'Corrections';
@@ -86,8 +85,8 @@ function generateHTML(project, phase, start, end, qa, reportData, recurring) {
 <html>
 <head>
     <style>
-        body { font-family: 'Inter', 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #334155; background-color: #ffffff; padding: 0; margin: 0; }
-        .wrapper { max-width: 900px; margin: 0 auto; padding: 40px; }
+        /* Scoped to .report-body to avoid leaking background to parent app */
+        .report-body { font-family: 'Inter', 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #334155; background-color: #ffffff; padding: 40px; }
         .intro { color: #1e293b; margin-bottom: 24px; font-size: 16px; }
         h1 { font-size: 26px; font-weight: 700; color: #1e293b; margin: 40px 0 24px 0; }
         h2 { font-size: 22px; font-weight: 700; color: #334155; margin: 40px 0 20px 0; border-left: 4px solid #3b82f6; padding-left: 12px; }
@@ -127,10 +126,15 @@ function generateHTML(project, phase, start, end, qa, reportData, recurring) {
         .sev-p1 { color: #ea580c; font-weight: 700; }
 
         .footer { margin-top: 60px; border-top: 1px solid #e2e8f0; padding-top: 20px; font-size: 12px; color: #94a3b8; }
+        
+        /* Recurring style */
+        .recurring-box { background: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px; padding: 20px; margin: 30px 0; border-left: 5px solid #f59e0b; }
+        .recurring-item { margin-bottom: 10px; }
+        .recurring-title { font-weight: 700; color: #92400e; }
     </style>
 </head>
-<body>
-    <div class="wrapper">
+<body style="margin:0; padding:0; background:transparent;">
+    <div class="report-body">
         <div class="intro">
             Hi Team,<br><br>
             Please find the exploratory QA summary report for the <strong>${phase}</strong> validation of the <strong>${project}</strong> platform.
@@ -148,6 +152,16 @@ function generateHTML(project, phase, start, end, qa, reportData, recurring) {
             <tr><th>End Date</th><td>${end}</td></tr>
             <tr><th>Testing Conducted By</th><td>${qa}</td></tr>
         </table>
+
+        ${recurring.length > 0 ? `
+            <div class="recurring-box">
+                <div class="recurring-title">⚠️ Recurring Issues Detected</div>
+                <p style="font-size: 14px; color: #92400e;">The following issues have appeared in previous reports:</p>
+                <ul class="risk-list">
+                    ${recurring.map(r => `<li><strong>${r.title}</strong>: Seen in ${r.matches.map(m => `${m.project} (${m.phase})`).join(', ')}</li>`).join('')}
+                </ul>
+            </div>
+        ` : ''}
 
         <h2>Session Summary</h2>
         <div class="summary-row">
@@ -275,7 +289,7 @@ function generateHTML(project, phase, start, end, qa, reportData, recurring) {
 }
 
 async function findRecurringBugs(currentBugs) {
-    const { data: pastReports } = await supabase.from('reports').select('project_name, phase, timestamp, bugs').order('timestamp', { ascending: false }).limit(20);
+    const { data: pastReports } = await supabase.from('reports').select('project_name, phase, timestamp, bugs').order('timestamp', { ascending: false }).limit(50);
     if (!pastReports) return [];
     const recurring = [];
     currentBugs.forEach(bug => {
@@ -284,7 +298,7 @@ async function findRecurringBugs(currentBugs) {
             if (report.bugs) {
                 report.bugs.forEach(pastBug => {
                     const similarity = getSimilarity(bug.title, pastBug.title);
-                    if (similarity > 0.7) matches.push({ project: report.project_name, phase: report.phase });
+                    if (similarity > 0.6) matches.push({ project: report.project_name, phase: report.phase });
                 });
             }
         });
