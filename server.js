@@ -379,4 +379,21 @@ app.get('/api/find-repeated', async (req, res) => {
     }
 });
 
+app.get('/api/records/:id', async (req, res) => {
+    try {
+        const { data, error } = await supabase.from('reports').select('*').eq('id', req.params.id).single();
+        if (error || !data) return res.status(404).json({ error: 'Report not found' });
+        res.json({ 
+            projectName: data.project_name, 
+            phase: data.phase, 
+            rawText: data.raw_text, 
+            bugs: data.bugs, 
+            htmlContent: data.html_content, 
+            timestamp: data.timestamp 
+        });
+    } catch (e) {
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
