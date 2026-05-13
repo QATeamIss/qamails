@@ -86,21 +86,6 @@ async function loadArchives() {
     }
 }
 
-async function viewBugs(project, phase, id) {
-    try {
-        const response = await fetch(`/api/records/${project}/${phase}/${id}`);
-        const data = await response.json();
-        
-        document.getElementById('mProject').textContent = data.projectName;
-        document.getElementById('mPhase').textContent = data.phase;
-        document.getElementById('rawBugs').textContent = data.rawText;
-        
-        document.getElementById('bugModal').classList.add('active');
-        document.body.style.overflow = 'hidden';
-    } catch (error) {
-        alert('Failed to load bug details');
-    }
-}
 
 async function loadRepeatedAnalysis() {
     const list = document.getElementById('repeatedBugsList');

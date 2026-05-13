@@ -33,7 +33,7 @@ async function push() {
             name: 'QA Automation',
             email: 'qa@automation.com'
         },
-        message: 'Initial push to GitHub with Supabase integration'
+        message: 'Fix: Email archiving and enhanced records view with rich preview'
     });
 
     console.log('🌿 Ensuring main branch...');

@@ -186,13 +186,3 @@
     overflow-y: auto;
 }
 
-.raw-bugs-viewer {
-    background: #000;
-    padding: 20px;
-    border-radius: 12px;
-    white-space: pre-wrap;
-    font-family: 'Courier New', monospace;
-    font-size: 0.9rem;
-    line-height: 1.6;
-    margin-top: 20px;
-}

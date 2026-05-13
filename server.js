@@ -20,6 +20,18 @@ app.use(express.static('public'));
 
 const OUTPUT_DIR = path.resolve(__dirname, '..');
 
+function formatDateForDB(dateStr) {
+    if (!dateStr) return null;
+    try {
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return null;
+        return d.toISOString().split('T')[0];
+    } catch (e) {
+        return null;
+    }
+}
+
+
 function getSimilarity(s1, s2) {
     // Stop words and generic phrases to ignore
     const stopWords = new Set(['unable', 'to', 'is', 'not', 'working', 'the', 'a', 'an', 'and', 'for', 'in', 'on', 'with', 'issue', 'bug']);
@@ -124,17 +136,21 @@ app.post('/api/generate-report', async (req, res) => {
             .insert([{
                 project_name: projectName,
                 phase: phase,
-                start_date: startDate,
-                end_date: endDate,
+                start_date: formatDateForDB(startDate),
+                end_date: formatDateForDB(endDate),
                 qa_name: qaName,
                 total_issues: reportData.bugs.length,
                 severity_breakdown: reportData.matrix.total,
                 bugs: reportData.bugs,
                 raw_text: bugList,
+                html_content: htmlContent,
                 timestamp: new Date().toISOString()
             }]);
 
-        if (dbError) console.error('Supabase Error:', dbError);
+        if (dbError) {
+            console.error('Supabase Error:', dbError);
+            return res.status(500).json({ error: 'Failed to save report to archives, but generation succeeded.', reportContent: htmlContent });
+        }
 
         res.json({ 
             message: 'Report generated successfully!', 
@@ -196,6 +212,7 @@ app.get('/api/records/:project/:phase/:id', async (req, res) => {
             phase: data.phase,
             rawText: data.raw_text,
             bugs: data.bugs,
+            htmlContent: data.html_content,
             timestamp: data.timestamp
         });
     } catch (error) {
