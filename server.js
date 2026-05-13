@@ -147,10 +147,6 @@ app.post('/api/generate-report', async (req, res) => {
                 timestamp: new Date().toISOString()
             }]);
 
-        if (dbError) {
-            console.error('Supabase Error:', dbError);
-            return res.status(500).json({ error: 'Failed to save report to archives, but generation succeeded.', reportContent: htmlContent });
-        }
 
         res.json({ 
             message: 'Report generated successfully!', 
