@@ -287,6 +287,10 @@ button:active {
     background: rgba(239, 68, 68, 0.1);
     color: #f87171;
     border: 1px solid rgba(239, 68, 68, 0.2);
+    text-align: left;
+    white-space: pre-wrap;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.85rem;
 }
 
 /* Preview Section */

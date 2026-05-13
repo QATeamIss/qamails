@@ -102,7 +102,9 @@ if (reportForm) {
                 document.getElementById('previewSection').scrollIntoView({ behavior: 'smooth' });
                 showStatus('Report generated and saved to archives!', 'success');
             } else {
-                showStatus(result.error || 'Failed to generate report.', 'error');
+                const errorMsg = result.error || 'Failed to generate report.';
+                const debugInfo = result.debug ? '\n\nDebug Info: ' + (typeof result.debug === 'object' ? JSON.stringify(result.debug, null, 2) : result.debug) : '';
+                showStatus(errorMsg + debugInfo, 'error');
             }
         } catch (err) {
             showStatus('Error connecting to server.', 'error');
@@ -120,9 +122,13 @@ function showStatus(message, type) {
     statusDiv.textContent = message;
     statusDiv.className = `status-message ${type}`;
     statusDiv.style.display = 'block';
-    setTimeout(() => {
-        statusDiv.style.display = 'none';
-    }, 5000);
+    
+    // Auto-hide only for success messages, keep errors visible for investigation
+    if (type === 'success') {
+        setTimeout(() => {
+            statusDiv.style.display = 'none';
+        }, 5000);
+    }
 }
 
 const copyBtn = document.getElementById('copyBtn');
