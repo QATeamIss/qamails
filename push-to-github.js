@@ -36,6 +36,9 @@ async function push() {
         message: 'Initial push to GitHub with Supabase integration'
     });
 
+    console.log('🌿 Ensuring main branch...');
+    await git.branch({ fs, dir, ref: 'main', checkout: true, force: true });
+
     console.log('🔗 Adding remote...');
     try {
         await git.addRemote({ fs, dir, remote: 'origin', url });
