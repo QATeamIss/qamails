@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QA Report Archives</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="records.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="background-blobs"></div>
+    <div class="container">
+        <header>
+            <div class="header-main">
+                <h1>QA Report <span>Archives</span></h1>
+                <p>Manage and analyze your historical testing data.</p>
+            </div>
+            <div class="header-actions">
+                <a href="index.html" class="btn-archives">← Back to Generator</a>
+            </div>
+        </header>
+
+        <div class="tabs-nav">
+            <button class="tab-btn active" id="archiveTabBtn">Report Archives</button>
+            <button class="tab-btn" id="analysisTabBtn">Repeated Bug Analysis</button>
+        </div>
+
+        <main id="archivesSection">
+            <div class="records-grid" id="recordsGrid">
+                <div class="loader"></div>
+            </div>
+        </main>
+
+        <main id="analysisSection" style="display: none;">
+            <div class="analysis-card">
+                <h2>Recurring Issues Detected</h2>
+                <p>Bugs identified as recurring across different projects and phases.</p>
+                <div id="repeatedBugsList" class="repeated-list">
+                    <!-- Repeated bugs will be loaded here -->
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Developed By Abhiram</p>
+        </footer>
+    </div>
+
+    <!-- Modal for Bug Details -->
+    <div id="bugModal" class="modal">
+        <div class="modal-content glass">
+            <div class="modal-header">
+                <h2 id="modalTitle">Session Bug Details</h2>
+                <span class="close-btn" id="closeModal">&times;</span>
+            </div>
+            <div id="modalBody">
+                <div class="modal-info">
+                    <p><strong>Project:</strong> <span id="mProject"></span></p>
+                    <p><strong>Phase:</strong> <span id="mPhase"></span></p>
+                </div>
+                <div class="raw-bugs-viewer" id="rawBugs"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="records.js"></script>
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QA Summary Report Generator</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="background-blobs"></div>
+    <div class="container">
+        <header>
+            <div class="header-main">
+                <h1>QA Summary Report <span>Generator</span></h1>
+                <p>Automate your exploratory testing reports with ease.</p>
+            </div>
+            <div class="header-actions">
+                <a href="records.html" class="btn-archives">📦 View Report Archives</a>
+            </div>
+        </header>
+
+        <div class="tabs-nav">
+            <button class="tab-btn active" id="dailyTabBtn">Daily Report</button>
+            <button class="tab-btn" id="weeklyTabBtn">Weekly Management Report</button>
+        </div>
+        
+        <main>
+            <!-- Daily Report Section -->
+            <section id="dailySection">
+                <form id="reportForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="projectName">Project Name</label>
+                            <input type="text" id="projectName" placeholder="e.g. Quantum Industries" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="phase">Testing Phase</label>
+                            <input type="text" id="phase" placeholder="e.g. Dev Test" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="startDate">Start Date</label>
+                            <input type="text" id="startDate" placeholder="e.g. 12 May 2026" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="endDate">End Date</label>
+                            <input type="text" id="endDate" placeholder="e.g. 13 May 2026" required>
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="qaName">QA Conducted By</label>
+                            <input type="text" id="qaName" placeholder="e.g. Abhiram P Mohan" required>
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="bugList">GitLab Issues List (Paste raw text)</label>
+                            <textarea id="bugList" placeholder="Paste the list of issues as they appear in GitLab..." required></textarea>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" id="submitBtn">
+                        <span class="btn-text">Generate & Save Report</span>
+                        <div class="loader"></div>
+                    </button>
+                </form>
+            </section>
+
+            <!-- Weekly Report Section -->
+            <section id="weeklySection" style="display: none;">
+                <div class="weekly-card glass">
+                    <h3>Generate Weekly Summary</h3>
+                    <p>Select a date range to aggregate all testing activities from your archives into a professional management report.</p>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="weeklyFrom">From Date</label>
+                            <input type="date" id="weeklyFrom">
+                        </div>
+                        <div class="form-group">
+                            <label for="weeklyTo">To Date</label>
+                            <input type="date" id="weeklyTo">
+                        </div>
+                    </div>
+                    <button id="generateWeeklyBtn" class="btn-weekly">
+                        📊 Generate Weekly Report
+                    </button>
+                </div>
+            </section>
+            
+            <div id="statusMessage" class="status-message"></div>
+
+            <div id="previewSection" class="preview-section" style="display: none;">
+                <div class="preview-header">
+                    <h3>Report Preview</h3>
+                    <button id="copyBtn" class="copy-btn">Copy to Clipboard</button>
+                </div>
+                <div id="reportPreview"></div>
+            </div>
+        </main>
+        
+        <footer>
+            <p>Developed By Abhiram</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
