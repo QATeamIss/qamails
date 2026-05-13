@@ -20,6 +20,9 @@ const OUTPUT_DIR = path.resolve(__dirname, '..');
 
 function formatDateForDB(dateStr) {
     if (!dateStr) return null;
+    // If it's already YYYY-MM-DD, just return it
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+    
     try {
         const d = new Date(dateStr);
         if (isNaN(d.getTime())) return null;
