@@ -20,13 +20,30 @@ const OUTPUT_DIR = path.resolve(__dirname, '..');
 
 function formatDateForDB(dateStr) {
     if (!dateStr) return null;
-    // If it's already YYYY-MM-DD, just return it
-    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+    const s = String(dateStr).trim();
+    
+    // Robustly extract YYYY-MM-DD if it exists anywhere in the string
+    const match = s.match(/(\d{4})-(\d{2})-(\d{2})/);
+    if (match) {
+        return `${match[1]}-${match[2]}-${match[3]}`;
+    }
     
     try {
-        const d = new Date(dateStr);
+        const d = new Date(s);
         if (isNaN(d.getTime())) return null;
-        return d.toISOString().split('T')[0];
+        
+        // Manual formatting to be absolutely safe from ISO string weirdness
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        
+        // Prevent huge years
+        if (year > 2100 || year < 1900) {
+            console.error('Invalid year detected:', year);
+            return new Date().toISOString().split('T')[0]; // Fallback to today
+        }
+        
+        return `${year}-${month}-${day}`;
     } catch (e) {
         return null;
     }
@@ -105,25 +122,29 @@ app.post('/api/generate-report', async (req, res) => {
         const htmlContent = generateHTML(projectName, phase, startDate, endDate, qaName, reportData, recurringIssues);
 
         // Save to Supabase
+        const insertData = {
+            project_name: projectName,
+            phase: phase,
+            start_date: formatDateForDB(startDate),
+            end_date: formatDateForDB(endDate),
+            qa_name: qaName,
+            total_issues: reportData.bugs.length,
+            severity_breakdown: reportData.matrix.total,
+            bugs: reportData.bugs,
+            raw_text: bugList,
+            html_content: htmlContent,
+            timestamp: new Date().toISOString()
+        };
+
         const { error: dbError } = await supabase
             .from('reports')
-            .insert([{
-                project_name: projectName,
-                phase: phase,
-                start_date: formatDateForDB(startDate),
-                end_date: formatDateForDB(endDate),
-                qa_name: qaName,
-                total_issues: reportData.bugs.length,
-                severity_breakdown: reportData.matrix.total,
-                bugs: reportData.bugs,
-                raw_text: bugList,
-                html_content: htmlContent,
-                timestamp: new Date().toISOString()
-            }]);
+            .insert([insertData]);
 
         if (dbError) {
             console.error('--- SUPABASE INSERT ERROR ---');
             console.error('Error Details:', JSON.stringify(dbError, null, 2));
+            console.error('Data attempted:', JSON.stringify(insertData, null, 2));
+            
             return res.status(500).json({ 
                 error: 'Failed to save report to archives, but generation succeeded.', 
                 debug: dbError.message || dbError,
