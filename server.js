@@ -118,46 +118,6 @@ async function findRecurringBugs(currentBugs) {
     return recurring;
 }
 
-app.post('/api/generate-report', async (req, res) => {
-    const { projectName, phase, startDate, endDate, qaName, bugList } = req.body;
-
-    if (!projectName || !phase || !bugList) {
-        return res.status(400).json({ error: 'Missing required fields' });
-    }
-
-    try {
-        const reportData = parseBugs(bugList);
-        const recurringIssues = await findRecurringBugs(reportData.bugs);
-        const htmlContent = generateHTML(projectName, phase, startDate, endDate, qaName, reportData, recurringIssues);
-
-        // Save to Supabase
-        const { error: dbError } = await supabase
-            .from('reports')
-            .insert([{
-                project_name: projectName,
-                phase: phase,
-                start_date: formatDateForDB(startDate),
-                end_date: formatDateForDB(endDate),
-                qa_name: qaName,
-                total_issues: reportData.bugs.length,
-                severity_breakdown: reportData.matrix.total,
-                bugs: reportData.bugs,
-                raw_text: bugList,
-                html_content: htmlContent,
-                timestamp: new Date().toISOString()
-            }]);
-
-
-        res.json({ 
-            message: 'Report generated successfully!', 
-            reportContent: htmlContent,
-            recurringCount: recurringIssues.length
-        });
-    } catch (error) {
-        console.error('Generation error:', error);
-        res.status(500).json({ error: 'Failed to generate report' });
-    }
-});
 
 app.get('/api/records', async (req, res) => {
     try {
