@@ -58,11 +58,16 @@ function parseBugs(text) {
         // Smarter category detection for standalone tags
         let category = 'Functional Bugs'; // default
         const lowerIssue = issue.toLowerCase();
+        const issueLines = issue.split('\n').map(l => l.trim().toLowerCase());
         
         if (lowerIssue.includes('enhancement') || lowerIssue.includes('suggestion')) {
             category = 'Enhancements';
         } else if (lowerIssue.includes('correction')) {
             category = 'Corrections';
+        } else if (issueLines.includes('functional')) {
+            category = 'Functional Bugs';
+        } else if (issueLines.includes('html')) {
+            category = 'HTML / UI Bugs';
         } else if (lowerIssue.includes('html') || lowerIssue.includes('ui') || lowerIssue.includes('css') || lowerIssue.includes('mobile view') || lowerIssue.includes('responsive')) {
             category = 'HTML / UI Bugs';
         } else if (lowerIssue.includes('functional')) {
