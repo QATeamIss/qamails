@@ -60,22 +60,22 @@ function parseBugs(text) {
         const lowerIssue = issue.toLowerCase();
         const issueLines = issue.split('\n').map(l => l.trim().toLowerCase());
         
-        // 1. Check for Type first (Highest priority)
-        if (lowerIssue.includes('enhancement') || lowerIssue.includes('suggestion')) {
+        // 1. Check for Type first (Enhancements/Suggestions/Corrections)
+        if (lowerIssue.includes('type : enhancement') || lowerIssue.includes('type : suggestion')) {
             category = 'Enhancements';
-        } else if (lowerIssue.includes('correction')) {
+        } else if (lowerIssue.includes('type : correction')) {
             category = 'Corrections';
         } 
-        // 2. Then check for labels to group bugs
+        // 2. Then check for explicit labels (Highest priority for Bugs)
         else if (issueLines.includes('functional')) {
             category = 'Functional Bugs';
         } else if (issueLines.includes('html')) {
             category = 'HTML / UI Bugs';
         } 
-        // 3. Heuristic fallbacks
+        // 3. Heuristic fallbacks ONLY if no labels found
         else if (lowerIssue.includes('html') || lowerIssue.includes('ui') || lowerIssue.includes('css') || lowerIssue.includes('mobile view') || lowerIssue.includes('responsive')) {
             category = 'HTML / UI Bugs';
-        } else if (lowerIssue.includes('functional')) {
+        } else {
             category = 'Functional Bugs';
         }
 
@@ -90,8 +90,8 @@ function parseBugs(text) {
         categories[category].total++;
     });
 
-    // Calculate bugTotals as the sum of bug-related categories to ensure matching
-    const bugCategories = ['Functional Bugs', 'HTML / UI Bugs', 'Corrections'];
+    // 4. Calculate Total Bugs: Strictly "Type: Bug" categories
+    const bugCategories = ['Functional Bugs', 'HTML / UI Bugs'];
     bugCategories.forEach(cat => {
         if (categories[cat]) {
             bugTotals.p0 += categories[cat].p0;
