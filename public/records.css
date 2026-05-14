@@ -212,6 +212,26 @@
     align-items: center;
 }
 
+.archive-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.mini-logo {
+    height: 35px;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+
 .modal-header h2 { font-size: 1.25rem; font-weight: 800; }
 
 .close-btn {

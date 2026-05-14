@@ -107,6 +107,17 @@ function parseBugs(text) {
 }
 
 function generateHTML(project, phase, start, end, qa, reportData, recurring) {
+    // Read logo and convert to base64 for embedding
+    let logoBase64 = '';
+    try {
+        const logoPath = path.join(__dirname, 'public', 'logo.png');
+        if (fs.existsSync(logoPath)) {
+            logoBase64 = fs.readFileSync(logoPath).toString('base64');
+        }
+    } catch (err) {
+        console.error('Error reading logo for report:', err);
+    }
+
     const { total, bugTotals, categories } = reportData.matrix;
     const catKeys = Object.keys(categories);
     
@@ -165,6 +176,10 @@ function generateHTML(project, phase, start, end, qa, reportData, recurring) {
         .recurring-box { background: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px; padding: 20px; margin: 30px 0; border-left: 5px solid #f59e0b; }
         .recurring-item { margin-bottom: 10px; }
         .recurring-title { font-weight: 700; color: #92400e; }
+        .report-header { display: flex; align-items: center; gap: 20px; margin-bottom: 40px; margin-top: 20px; }
+        .report-logo { height: 45px; }
+        .report-title-group { flex: 1; }
+        .report-title-group h1 { margin: 0; font-size: 24px; }
     </style>
 </head>
 <body style="margin:0; padding:0; background:transparent;">
@@ -174,7 +189,12 @@ function generateHTML(project, phase, start, end, qa, reportData, recurring) {
             Please find the exploratory QA summary report for the <strong>${phase}</strong> validation of the <strong>${project}</strong> platform.
         </div>
 
-        <h1>Exploratory QA Summary Report</h1>
+        <div class="report-header">
+            <img src="data:image/png;base64,${logoBase64}" alt="Logo" class="report-logo">
+            <div class="report-title-group">
+                <h1>Exploratory QA Summary Report</h1>
+            </div>
+        </div>
 
         <h2>Testing Information</h2>
         <table class="info-table">
