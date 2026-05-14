@@ -60,15 +60,20 @@ function parseBugs(text) {
         const lowerIssue = issue.toLowerCase();
         const issueLines = issue.split('\n').map(l => l.trim().toLowerCase());
         
-        if (lowerIssue.includes('enhancement') || lowerIssue.includes('suggestion')) {
-            category = 'Enhancements';
-        } else if (lowerIssue.includes('correction')) {
-            category = 'Corrections';
-        } else if (issueLines.includes('functional')) {
+        // 1. Check for explicit labels first (Highest priority)
+        if (issueLines.includes('functional')) {
             category = 'Functional Bugs';
         } else if (issueLines.includes('html')) {
             category = 'HTML / UI Bugs';
-        } else if (lowerIssue.includes('html') || lowerIssue.includes('ui') || lowerIssue.includes('css') || lowerIssue.includes('mobile view') || lowerIssue.includes('responsive')) {
+        } 
+        // 2. Check for type keywords if no explicit label found
+        else if (lowerIssue.includes('enhancement') || lowerIssue.includes('suggestion')) {
+            category = 'Enhancements';
+        } else if (lowerIssue.includes('correction')) {
+            category = 'Corrections';
+        } 
+        // 3. Heuristic fallbacks
+        else if (lowerIssue.includes('html') || lowerIssue.includes('ui') || lowerIssue.includes('css') || lowerIssue.includes('mobile view') || lowerIssue.includes('responsive')) {
             category = 'HTML / UI Bugs';
         } else if (lowerIssue.includes('functional')) {
             category = 'Functional Bugs';
@@ -80,16 +85,22 @@ function parseBugs(text) {
         totals[sevKey]++;
         totals.total++;
         
-        const isBug = type.toLowerCase().includes('bug') || type.toLowerCase().includes('correction');
-        if (isBug) {
-            totals.bugsOnly++;
-            bugTotals[sevKey]++;
-            bugTotals.total++;
-        }
-        
         if (!categories[category]) categories[category] = { p0:0, p1:0, p2:0, p3:0, p4:0, total: 0 };
         categories[category][sevKey]++;
         categories[category].total++;
+    });
+
+    // Calculate bugTotals as the sum of bug-related categories to ensure matching
+    const bugCategories = ['Functional Bugs', 'HTML / UI Bugs', 'Corrections'];
+    bugCategories.forEach(cat => {
+        if (categories[cat]) {
+            bugTotals.p0 += categories[cat].p0;
+            bugTotals.p1 += categories[cat].p1;
+            bugTotals.p2 += categories[cat].p2;
+            bugTotals.p3 += categories[cat].p3;
+            bugTotals.p4 += categories[cat].p4;
+            bugTotals.total += categories[cat].total;
+        }
     });
 
     return { bugs: parsedBugsList, matrix: { total: totals, bugTotals: bugTotals, categories: categories } };
@@ -202,7 +213,7 @@ function generateHTML(project, phase, start, end, qa, reportData, recurring) {
             </div>
         </div>
         <div class="totals-line">
-            Total Issues Identified: ${total.total} | Total Bugs: ${total.bugsOnly}
+            Total Issues Identified: ${total.total} | Total Bugs: ${bugTotals.total}
         </div>
 
         <h2>Issue Classification Matrix</h2>
