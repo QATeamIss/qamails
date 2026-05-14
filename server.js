@@ -323,7 +323,12 @@ function generateHTML(project, phase, start, end, qa, reportData, recurring) {
                 </tr>
             </thead>
             <tbody>
-                ${reportData.bugs.map((b, i) => `
+                ${reportData.bugs
+                    .sort((a, b) => {
+                        const prio = { 'P0': 0, 'P1': 1, 'P2': 2, 'P3': 3, 'P4': 4 };
+                        return prio[a.severity] - prio[b.severity];
+                    })
+                    .map((b, i) => `
                     <tr>
                         <td>${i + 1}</td>
                         <td>${b.title}</td>
