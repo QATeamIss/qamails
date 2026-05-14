@@ -1,5 +1,18 @@
+let allProjectsTree = {};
+let filteredProjectsArray = [];
+let currentPage = 1;
+const projectsPerPage = 12;
+
 document.addEventListener('DOMContentLoaded', () => {
     loadArchives();
+
+    // Search logic
+    const searchInput = document.getElementById('reportSearch');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            handleSearch(e.target.value);
+        });
+    }
 
     // Tab Switching
     const archiveTabBtn = document.getElementById('archiveTabBtn');
@@ -13,7 +26,6 @@ document.addEventListener('DOMContentLoaded', () => {
             analysisTabBtn.classList.remove('active');
             archivesSection.style.display = 'block';
             analysisSection.style.display = 'none';
-            loadArchives();
         });
 
         analysisTabBtn.addEventListener('click', () => {
@@ -25,7 +37,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Modal Close
     const closeBtn = document.getElementById('closeModal');
     if (closeBtn) {
         closeBtn.addEventListener('click', closeModal);
@@ -38,55 +49,132 @@ async function loadArchives() {
 
     try {
         const response = await fetch('/api/records');
-        const tree = await response.json();
-        
-        if (Object.keys(tree).length === 0) {
-            grid.innerHTML = '<div class="no-records">No records found. Generate a report first!</div>';
-            return;
-        }
-
-        grid.innerHTML = '';
-        for (const [project, phases] of Object.entries(tree)) {
-            const projectEl = document.createElement('div');
-            projectEl.className = 'project-folder';
-            
-            let phasesHtml = '';
-            for (const [phase, reports] of Object.entries(phases)) {
-                phasesHtml += `
-                    <div class="phase-item">
-                        <div class="phase-header">${phase.replace(/_/g, ' ')}</div>
-                        <div class="reports-list">
-                            ${reports.map(r => `
-                                <div class="report-card">
-                                    <div class="report-meta">
-                                        <div>📅 ${new Date(r.timestamp).toLocaleDateString()}</div>
-                                        <div>🕒 ${new Date(r.timestamp).toLocaleTimeString()}</div>
-                                        <div>👤 ${r.qaName}</div>
-                                        <div>🐞 ${r.totalIssues} Issues</div>
-                                    </div>
-                                    <button class="btn-view-bugs" onclick="viewBugs('${project}', '${phase}', '${r.id}')">View Details</button>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                `;
-            }
-
-            projectEl.innerHTML = `
-                <div class="folder-header" onclick="this.parentElement.classList.toggle('active')">
-                    <div class="folder-main-info">
-                        <span class="folder-icon">📂</span>
-                        <span class="project-name">${project.replace(/_/g, ' ')}</span>
-                    </div>
-                    <span class="toggle-icon">▼</span>
-                </div>
-                <div class="phase-list">${phasesHtml}</div>
-            `;
-            grid.appendChild(projectEl);
-        }
+        allProjectsTree = await response.json();
+        handleSearch(''); // Initialize view
     } catch (error) {
         grid.innerHTML = '<div class="error">Failed to load archives.</div>';
     }
+}
+
+function handleSearch(query) {
+    const q = query.toLowerCase();
+    
+    // Filter projects: either project name matches OR any report within matches
+    filteredProjectsArray = Object.entries(allProjectsTree).filter(([projectName, phases]) => {
+        if (projectName.toLowerCase().includes(q)) return true;
+        
+        // Check if any report inside contains the query (QA Name or Content placeholder)
+        return Object.values(phases).some(reports => 
+            reports.some(r => 
+                r.qaName.toLowerCase().includes(q) || 
+                (r.totalIssues && r.totalIssues.toString().includes(q))
+            )
+        );
+    });
+
+    currentPage = 1;
+    renderGrid();
+}
+
+function renderGrid() {
+    const grid = document.getElementById('recordsGrid');
+    if (!grid) return;
+
+    const start = (currentPage - 1) * projectsPerPage;
+    const end = start + projectsPerPage;
+    const paginated = filteredProjectsArray.slice(start, end);
+
+    if (paginated.length === 0) {
+        grid.innerHTML = '<div class="no-records">No matching records found.</div>';
+        renderPagination(0);
+        return;
+    }
+
+    grid.innerHTML = '';
+    paginated.forEach(([projectName, phases]) => {
+        const folder = document.createElement('div');
+        folder.className = 'project-folder';
+        folder.innerHTML = `
+            <span class="folder-icon">📁</span>
+            <span class="project-name">${projectName.replace(/_/g, ' ')}</span>
+        `;
+        
+        const phaseList = document.createElement('div');
+        phaseList.className = 'phase-list';
+        
+        let phasesHtml = '';
+        for (const [phase, reports] of Object.entries(phases)) {
+            phasesHtml += `
+                <div class="phase-item">
+                    <div class="phase-header">${phase.replace(/_/g, ' ')}</div>
+                    <div class="reports-list">
+                        ${reports.map(r => `
+                            <div class="report-card">
+                                <div class="report-meta">
+                                    <div>📅 ${new Date(r.timestamp).toLocaleDateString()}</div>
+                                    <div>👤 ${r.qaName}</div>
+                                    <div>🐞 ${r.totalIssues} Issues</div>
+                                </div>
+                                <button class="btn-view-bugs" onclick="viewBugs('${projectName}', '${phase}', '${r.id}')">View Report</button>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        phaseList.innerHTML = phasesHtml;
+        
+        folder.onclick = (e) => {
+            // Close other active folders first for clean accordion look
+            document.querySelectorAll('.project-folder.active').forEach(f => {
+                if (f !== folder) {
+                    f.classList.remove('active');
+                    f.nextElementSibling.style.display = 'none';
+                }
+            });
+
+            const isActive = folder.classList.toggle('active');
+            phaseList.style.display = isActive ? 'grid' : 'none';
+        };
+
+        grid.appendChild(folder);
+        grid.appendChild(phaseList);
+    });
+
+    renderPagination(filteredProjectsArray.length);
+}
+
+function renderPagination(totalItems) {
+    const container = document.getElementById('pagination');
+    if (!container) return;
+
+    const totalPages = Math.ceil(totalItems / projectsPerPage);
+    if (totalPages <= 1) {
+        container.innerHTML = '';
+        return;
+    }
+
+    let html = `
+        <button class="page-btn" ${currentPage === 1 ? 'disabled' : ''} onclick="changePage(${currentPage - 1})">Prev</button>
+    `;
+
+    for (let i = 1; i <= totalPages; i++) {
+        html += `
+            <button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>
+        `;
+    }
+
+    html += `
+        <button class="page-btn" ${currentPage === totalPages ? 'disabled' : ''} onclick="changePage(${currentPage + 1})">Next</button>
+    `;
+
+    container.innerHTML = html;
+}
+
+function changePage(page) {
+    currentPage = page;
+    renderGrid();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 
