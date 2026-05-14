@@ -73,9 +73,12 @@ async function loadArchives() {
             }
 
             projectEl.innerHTML = `
-                <div class="folder-header">
-                    <span class="folder-icon">📂</span>
-                    <span class="project-name">${project.replace(/_/g, ' ')}</span>
+                <div class="folder-header" onclick="this.parentElement.classList.toggle('active')">
+                    <div class="folder-main-info">
+                        <span class="folder-icon">📂</span>
+                        <span class="project-name">${project.replace(/_/g, ' ')}</span>
+                    </div>
+                    <span class="toggle-icon">▼</span>
                 </div>
                 <div class="phase-list">${phasesHtml}</div>
             `;
@@ -140,7 +143,7 @@ async function viewBugs(project, phase, id) {
         if (data.htmlContent) {
             // Use an iframe to safely render the report and avoid style leaks
             modalBody.innerHTML = `
-                <iframe id="reportFrame" style="width:100%; height:80vh; border:none; background:white; border-radius:8px;"></iframe>
+                <iframe id="reportFrame" style="width:100%; height:75vh; border:none; background:white; border-radius:8px;"></iframe>
             `;
             const frame = document.getElementById('reportFrame');
             const doc = frame.contentWindow.document;
