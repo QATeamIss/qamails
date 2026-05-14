@@ -60,17 +60,17 @@ function parseBugs(text) {
         const lowerIssue = issue.toLowerCase();
         const issueLines = issue.split('\n').map(l => l.trim().toLowerCase());
         
-        // 1. Check for explicit labels first (Highest priority)
-        if (issueLines.includes('functional')) {
-            category = 'Functional Bugs';
-        } else if (issueLines.includes('html')) {
-            category = 'HTML / UI Bugs';
-        } 
-        // 2. Check for type keywords if no explicit label found
-        else if (lowerIssue.includes('enhancement') || lowerIssue.includes('suggestion')) {
+        // 1. Check for Type first (Highest priority)
+        if (lowerIssue.includes('enhancement') || lowerIssue.includes('suggestion')) {
             category = 'Enhancements';
         } else if (lowerIssue.includes('correction')) {
             category = 'Corrections';
+        } 
+        // 2. Then check for labels to group bugs
+        else if (issueLines.includes('functional')) {
+            category = 'Functional Bugs';
+        } else if (issueLines.includes('html')) {
+            category = 'HTML / UI Bugs';
         } 
         // 3. Heuristic fallbacks
         else if (lowerIssue.includes('html') || lowerIssue.includes('ui') || lowerIssue.includes('css') || lowerIssue.includes('mobile view') || lowerIssue.includes('responsive')) {
