@@ -35,6 +35,8 @@ function parseBugs(text) {
     const issues = text.split(/Issue\s+/).filter(i => i.trim() !== '');
     const parsedBugsList = [];
     const totals = { p0: 0, p1: 0, p2: 0, p3: 0, p4: 0, total: 0, bugsOnly: 0 };
+    const bugTotals = { p0: 0, p1: 0, p2: 0, p3: 0, p4: 0, total: 0 };
+    
     const categories = {
         'Functional Bugs': { p0:0, p1:0, p2:0, p3:0, p4:0, total: 0 },
         'HTML / UI Bugs': { p0:0, p1:0, p2:0, p3:0, p4:0, total: 0 },
@@ -43,37 +45,53 @@ function parseBugs(text) {
     };
 
     issues.forEach(issue => {
-        const priorityMatch = issue.match(/P([0-4])/);
+        const priorityMatch = issue.match(/\bP([0-4])\b/);
         const severity = priorityMatch ? `P${priorityMatch[1]}` : 'P2';
-        const lines = issue.split('\n');
-        const titleMatch = lines[0].trim();
-        const typeMatch = issue.match(/Type\s*:\s*([^\n|]+)/i);
-        const categoryMatch = issue.match(/Category\s*:\s*([^\n|]+)/i);
+        const sevKey = severity.toLowerCase();
         
+        const lines = issue.split('\n').map(l => l.trim()).filter(l => l !== '');
+        const titleMatch = lines[0] || 'Untitled Issue';
+        
+        const typeMatch = issue.match(/Type\s*:\s*([^\n|]+)/i);
         const type = typeMatch ? typeMatch[1].trim() : 'Bug';
-        let category = categoryMatch ? categoryMatch[1].trim() : 'Functional Bugs';
 
-        if (category.toLowerCase().includes('ui') || category.toLowerCase().includes('html')) category = 'HTML / UI Bugs';
-        else if (category.toLowerCase().includes('enhancement')) category = 'Enhancements';
-        else if (category.toLowerCase().includes('correction')) category = 'Corrections';
-        else if (category.toLowerCase().includes('functional')) category = 'Functional Bugs';
+        // Smarter category detection for standalone tags
+        let category = 'Functional Bugs'; // default
+        const lowerIssue = issue.toLowerCase();
+        
+        if (lowerIssue.includes('enhancement') || lowerIssue.includes('suggestion')) {
+            category = 'Enhancements';
+        } else if (lowerIssue.includes('correction')) {
+            category = 'Corrections';
+        } else if (lowerIssue.includes('html') || lowerIssue.includes('ui') || lowerIssue.includes('css') || lowerIssue.includes('mobile view') || lowerIssue.includes('responsive')) {
+            category = 'HTML / UI Bugs';
+        } else if (lowerIssue.includes('functional')) {
+            category = 'Functional Bugs';
+        }
 
         const bug = { title: titleMatch, severity: severity, type: type, category: category };
         parsedBugsList.push(bug);
-        totals[severity.toLowerCase()]++;
+        
+        totals[sevKey]++;
         totals.total++;
-        if (type.toLowerCase().includes('bug')) totals.bugsOnly++;
+        
+        const isBug = type.toLowerCase().includes('bug') || type.toLowerCase().includes('correction');
+        if (isBug) {
+            totals.bugsOnly++;
+            bugTotals[sevKey]++;
+            bugTotals.total++;
+        }
         
         if (!categories[category]) categories[category] = { p0:0, p1:0, p2:0, p3:0, p4:0, total: 0 };
-        categories[category][severity.toLowerCase()]++;
+        categories[category][sevKey]++;
         categories[category].total++;
     });
 
-    return { bugs: parsedBugsList, matrix: { total: totals, categories: categories } };
+    return { bugs: parsedBugsList, matrix: { total: totals, bugTotals: bugTotals, categories: categories } };
 }
 
 function generateHTML(project, phase, start, end, qa, reportData, recurring) {
-    const { total, categories } = reportData.matrix;
+    const { total, bugTotals, categories } = reportData.matrix;
     const catKeys = Object.keys(categories);
     
     const criticalRisks = reportData.bugs.filter(b => b.severity === 'P0' || b.severity === 'P1').slice(0, 5);
@@ -207,12 +225,12 @@ function generateHTML(project, phase, start, end, qa, reportData, recurring) {
                 </tr>
                 <tr>
                     <td>Total Bugs</td>
-                    <td style="text-align: center"><span class="num-link">${total.bugsOnly}</span></td>
-                    <td style="text-align: center"><span class="num-link">${total.p0}</span></td>
-                    <td style="text-align: center"><span class="num-link">${total.p1}</span></td>
-                    <td style="text-align: center"><span class="num-link">${total.p2}</span></td>
-                    <td style="text-align: center"><span class="num-link">${total.p3}</span></td>
-                    <td style="text-align: center"><span class="num-link">${total.p4}</span></td>
+                    <td style="text-align: center"><span class="num-link">${bugTotals.total}</span></td>
+                    <td style="text-align: center"><span class="num-link">${bugTotals.p0}</span></td>
+                    <td style="text-align: center"><span class="num-link">${bugTotals.p1}</span></td>
+                    <td style="text-align: center"><span class="num-link">${bugTotals.p2}</span></td>
+                    <td style="text-align: center"><span class="num-link">${bugTotals.p3}</span></td>
+                    <td style="text-align: center"><span class="num-link">${bugTotals.p4}</span></td>
                 </tr>
                 ${catKeys.map(cat => `
                     <tr>
