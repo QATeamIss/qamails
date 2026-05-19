@@ -118,18 +118,56 @@ if (reportForm) {
 
 function showStatus(message, type) {
     const statusDiv = document.getElementById('statusMessage');
+    const toastTitle = document.getElementById('toastTitle');
+    const toastDesc = document.getElementById('toastDesc');
+    const toastIcon = statusDiv.querySelector('.toast-icon i');
+    const toastAction = document.getElementById('toastRetry');
+
     if (!statusDiv) return;
-    statusDiv.textContent = message;
-    statusDiv.className = `status-message ${type}`;
-    statusDiv.style.display = 'block';
+
+    if (type === 'success') {
+        toastTitle.textContent = 'Success!';
+        toastDesc.textContent = message;
+        toastIcon.className = 'ph-fill ph-check-circle';
+        statusDiv.style.borderLeftColor = '#10b981';
+        toastIcon.style.color = '#10b981';
+        if(toastAction) toastAction.style.display = 'none';
+    } else {
+        toastTitle.textContent = 'Error!';
+        toastDesc.textContent = message;
+        toastIcon.className = 'ph-fill ph-warning-circle';
+        statusDiv.style.borderLeftColor = '#ef4444';
+        toastIcon.style.color = '#ef4444';
+        if(toastAction) toastAction.style.display = 'flex';
+    }
+
+    statusDiv.classList.add('show');
     
-    // Auto-hide only for success messages, keep errors visible for investigation
     if (type === 'success') {
         setTimeout(() => {
-            statusDiv.style.display = 'none';
+            statusDiv.classList.remove('show');
         }, 5000);
     }
 }
+
+// Dark Mode Toggle
+const darkModeToggle = document.getElementById('darkModeToggle');
+if (darkModeToggle) {
+    darkModeToggle.addEventListener('change', (e) => {
+        if (e.target.checked) {
+            document.documentElement.style.setProperty('--card-bg', 'rgba(30, 41, 59, 0.85)');
+            document.documentElement.style.setProperty('--text', '#f8fafc');
+            document.documentElement.style.setProperty('--input-bg', 'rgba(15, 23, 42, 0.8)');
+            document.documentElement.style.setProperty('--text-muted', '#94a3b8');
+        } else {
+            document.documentElement.style.setProperty('--card-bg', 'rgba(255, 255, 255, 0.65)');
+            document.documentElement.style.setProperty('--text', '#1f2937');
+            document.documentElement.style.setProperty('--input-bg', 'rgba(255, 255, 255, 0.8)');
+            document.documentElement.style.setProperty('--text-muted', '#4b5563');
+        }
+    });
+}
+
 
 const copyBtn = document.getElementById('copyBtn');
 if (copyBtn) {

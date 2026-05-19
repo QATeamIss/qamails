@@ -8,60 +8,118 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 <body>
-    <div class="background-blobs"></div>
+    <div class="bg-layer"></div>
+    <div class="bg-pattern"></div>
+    
+    <header class="top-nav">
+        <div class="nav-left">
+            <img src="logo.png" alt="Inter Smart Logo" class="project-logo">
+        </div>
+        <div class="nav-right">
+            <a href="records.html" class="btn-archives">View Archives</a>
+            <button class="icon-btn"><i class="ph ph-magnifying-glass"></i></button>
+            <button class="icon-btn"><i class="ph ph-bell"></i></button>
+            <div class="profile-dropdown">
+                <img src="https://i.pravatar.cc/150?img=11" alt="Profile" class="profile-pic">
+                <i class="ph ph-caret-down"></i>
+            </div>
+        </div>
+    </header>
+
     <div class="container">
-        <header>
-            <div class="header-main">
-                <img src="logo.png" alt="Inter Smart Logo" class="project-logo">
+        <div class="page-header">
+            <div class="title-area">
                 <h1>QA Report <span>Generator</span></h1>
                 <p>Generate professional, categorized QA reports from your bug list.</p>
             </div>
-            <div class="header-actions">
-                <a href="records.html" class="btn-archives">View Archives</a>
+            <div class="theme-toggle">
+                <input type="checkbox" id="darkModeToggle" class="toggle-checkbox">
+                <label for="darkModeToggle" class="toggle-label">
+                    <span class="toggle-inner"></span>
+                    <i class="ph-fill ph-moon"></i>
+                </label>
             </div>
-        </header>
+        </div>
 
         <div class="tabs-nav">
-            <button class="tab-btn active" id="dailyTabBtn">Daily Report</button>
-            <button class="tab-btn" id="weeklyTabBtn">Weekly Management Report</button>
+            <button class="tab-btn active" id="dailyTabBtn"><i class="ph ph-clock"></i> Daily Report</button>
+            <button class="tab-btn" id="weeklyTabBtn"><i class="ph ph-calendar-blank"></i> Weekly Management</button>
         </div>
         
         <main>
             <!-- Daily Report Section -->
             <section id="dailySection">
-                <form id="reportForm">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="projectName">Project Name</label>
-                            <input type="text" id="projectName" placeholder="e.g. Quantum Industries" required>
+                <form id="reportForm" class="glass-panel">
+                    
+                    <div class="form-section">
+                        <h4>Project Details</h4>
+                        <div class="form-grid">
+                            <div class="input-group">
+                                <label for="projectName">Project Name</label>
+                                <div class="input-wrapper">
+                                    <i class="ph ph-briefcase left-icon"></i>
+                                    <input type="text" id="projectName" placeholder="e.g., Quantum Industries" required>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="phase">Testing Phase</label>
+                                <div class="input-wrapper">
+                                    <i class="ph ph-flask left-icon"></i>
+                                    <input type="text" id="phase" placeholder="e.g., Dev Test" required>
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="phase">Testing Phase</label>
-                            <input type="text" id="phase" placeholder="e.g. Dev Test" required>
+                    </div>
+
+                    <div class="form-section">
+                        <h4>Report Parameters</h4>
+                        <div class="form-grid">
+                            <div class="input-group">
+                                <label for="startDate">Start Date</label>
+                                <div class="input-wrapper">
+                                    <input type="text" id="startDate" placeholder="e.g., 12 May 2026" required>
+                                    <i class="ph ph-calendar-blank right-icon"></i>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="endDate">End Date</label>
+                                <div class="input-wrapper">
+                                    <input type="text" id="endDate" placeholder="e.g., 13 May 2026" required>
+                                    <i class="ph ph-calendar-blank right-icon"></i>
+                                </div>
+                            </div>
+                            <div class="input-group full-width">
+                                <label for="qaName">QA Conducted By</label>
+                                <div class="input-wrapper">
+                                    <i class="ph ph-user left-icon"></i>
+                                    <input type="text" id="qaName" placeholder="e.g., Abhiram P Mohan" required>
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="startDate">Start Date</label>
-                            <input type="text" id="startDate" placeholder="e.g. 12 May 2026" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="endDate">End Date</label>
-                            <input type="text" id="endDate" placeholder="e.g. 13 May 2026" required>
-                        </div>
-                        <div class="form-group full-width">
-                            <label for="qaName">QA Conducted By</label>
-                            <input type="text" id="qaName" placeholder="e.g. Abhiram P Mohan" required>
-                        </div>
-                        <div class="form-group full-width">
-                            <label for="bugList">GitLab Issues List (Paste raw text)</label>
-                            <textarea id="bugList" placeholder="Paste the list of issues as they appear in GitLab..." required></textarea>
+                    </div>
+
+                    <div class="form-section">
+                        <h4>Step 2: Paste Issues List <i class="ph ph-info tooltip-icon"></i></h4>
+                        <div class="drag-drop-zone">
+                            <textarea id="bugList" placeholder=" " required></textarea>
+                            <div class="drag-drop-content">
+                                <div class="zone-icons">
+                                    <i class="ph ph-file-text"></i>
+                                    <i class="ph ph-clipboard"></i>
+                                </div>
+                                <p>Drag & drop a file (.txt, .csv) or paste raw GitLab text here...</p>
+                                <span>(Example: Issue ID | Title | Status)</span>
+                            </div>
                         </div>
                     </div>
                     
-                    <button type="submit" id="submitBtn">
+                    <button type="submit" id="submitBtn" class="btn-primary">
                         <span class="btn-text">Generate & Save Report</span>
+                        <i class="ph ph-sign-out"></i>
                         <div class="loader"></div>
                     </button>
                 </form>
@@ -69,39 +127,52 @@
 
             <!-- Weekly Report Section -->
             <section id="weeklySection" style="display: none;">
-                <div class="weekly-card glass">
+                <div class="weekly-card glass-panel">
                     <h3>Generate Weekly Summary</h3>
                     <p>Select a date range to aggregate all testing activities from your archives into a professional management report.</p>
                     <div class="form-grid">
-                        <div class="form-group">
+                        <div class="input-group">
                             <label for="weeklyFrom">From Date</label>
-                            <input type="date" id="weeklyFrom">
+                            <div class="input-wrapper">
+                                <input type="date" id="weeklyFrom">
+                            </div>
                         </div>
-                        <div class="form-group">
+                        <div class="input-group">
                             <label for="weeklyTo">To Date</label>
-                            <input type="date" id="weeklyTo">
+                            <div class="input-wrapper">
+                                <input type="date" id="weeklyTo">
+                            </div>
                         </div>
                     </div>
-                    <button id="generateWeeklyBtn" class="btn-weekly">
-                        📊 Generate Weekly Report
+                    <button id="generateWeeklyBtn" class="btn-primary btn-weekly">
+                        <i class="ph ph-chart-bar"></i> Generate Weekly Report
                     </button>
                 </div>
             </section>
             
-            <div id="statusMessage" class="status-message"></div>
-
             <div id="previewSection" class="preview-section" style="display: none;">
                 <div class="preview-header">
                     <h3>Report Preview</h3>
-                    <button id="copyBtn" class="copy-btn">Copy to Clipboard</button>
+                    <button id="copyBtn" class="copy-btn"><i class="ph ph-copy"></i> Copy to Clipboard</button>
                 </div>
                 <div id="reportPreview"></div>
             </div>
         </main>
-        
-        <footer>
-            <p>Developed By Abhiram</p>
-        </footer>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="statusMessage" class="toast-notification">
+        <div class="toast-icon">
+            <i class="ph-fill ph-warning-circle"></i>
+        </div>
+        <div class="toast-content">
+            <span class="toast-title" id="toastTitle">Error: Could not connect to server.</span>
+            <span class="toast-desc" id="toastDesc">Check connection.</span>
+        </div>
+        <button class="toast-action" id="toastRetry">
+            <i class="ph ph-arrows-clockwise"></i>
+            <span>retrying</span>
+        </button>
     </div>
 
     <script src="script.js"></script>
