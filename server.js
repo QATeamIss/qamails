@@ -40,11 +40,17 @@ function parseBugs(text) {
     const categories = {
         'Functional Bugs': { p0:0, p1:0, p2:0, p3:0, p4:0, total: 0 },
         'HTML / UI Bugs': { p0:0, p1:0, p2:0, p3:0, p4:0, total: 0 },
+        'Deviations': { p0:0, p1:0, p2:0, p3:0, p4:0, total: 0 },
         'Enhancements': { p0:0, p1:0, p2:0, p3:0, p4:0, total: 0 },
         'Corrections': { p0:0, p1:0, p2:0, p3:0, p4:0, total: 0 }
     };
 
     issues.forEach(issue => {
+        // Skip closed issues — they appear with a "Closed" standalone line
+        const issueLinesTrimmed = issue.split('\n').map(l => l.trim());
+        const isClosed = issueLinesTrimmed.some(l => /^closed$/i.test(l) || /^closed\s+\d+/i.test(l));
+        if (isClosed) return;
+
         const priorityMatch = issue.match(/\bP([0-4])\b/);
         const severity = priorityMatch ? `P${priorityMatch[1]}` : 'P2';
         const sevKey = severity.toLowerCase();
@@ -60,19 +66,25 @@ function parseBugs(text) {
         const lowerIssue = issue.toLowerCase();
         const issueLines = issue.split('\n').map(l => l.trim().toLowerCase());
         
-        // 1. Check for Type first (Enhancements/Suggestions/Corrections)
+        // 1. Check for Deviation label FIRST (explicit standalone line)
+        const isDeviation = issueLines.includes('deviation');
+        
+        // 2. Check for Type (Enhancements/Suggestions/Corrections)
         if (lowerIssue.includes('type : enhancement') || lowerIssue.includes('type : suggestion')) {
             category = 'Enhancements';
         } else if (lowerIssue.includes('type : correction')) {
             category = 'Corrections';
-        } 
-        // 2. Then check for explicit labels (Highest priority for Bugs)
+        } else if (isDeviation) {
+            // Deviation takes priority over HTML/Functional heuristics
+            category = 'Deviations';
+        }
+        // 3. Then check for explicit bug-type labels
         else if (issueLines.includes('functional')) {
             category = 'Functional Bugs';
         } else if (issueLines.includes('html')) {
             category = 'HTML / UI Bugs';
         } 
-        // 3. Heuristic fallbacks ONLY if no labels found
+        // 4. Heuristic fallbacks ONLY if no labels found
         else if (lowerIssue.includes('html') || lowerIssue.includes('ui') || lowerIssue.includes('css') || lowerIssue.includes('mobile view') || lowerIssue.includes('responsive')) {
             category = 'HTML / UI Bugs';
         } else {
@@ -90,7 +102,7 @@ function parseBugs(text) {
         categories[category].total++;
     });
 
-    // 4. Calculate Total Bugs: Strictly "Type: Bug" categories
+    // 4. Calculate Total Bugs: Strictly "Type: Bug" categories (excludes Deviations, Enhancements, Corrections)
     const bugCategories = ['Functional Bugs', 'HTML / UI Bugs'];
     bugCategories.forEach(cat => {
         if (categories[cat]) {
@@ -102,12 +114,14 @@ function parseBugs(text) {
             bugTotals.total += categories[cat].total;
         }
     });
+    // Also store deviation count for convenience
+    const deviationTotals = categories['Deviations'] || { p0:0, p1:0, p2:0, p3:0, p4:0, total: 0 };
 
-    return { bugs: parsedBugsList, matrix: { total: totals, bugTotals: bugTotals, categories: categories } };
+    return { bugs: parsedBugsList, matrix: { total: totals, bugTotals: bugTotals, deviationTotals: deviationTotals, categories: categories } };
 }
 
 function generateHTML(project, phase, start, end, qa, reportData, recurring) {
-    const { total, bugTotals, categories } = reportData.matrix;
+    const { total, bugTotals, deviationTotals, categories } = reportData.matrix;
     const catKeys = Object.keys(categories);
     
     const criticalRisks = reportData.bugs.filter(b => b.severity === 'P0' || b.severity === 'P1').slice(0, 5);
@@ -213,7 +227,7 @@ function generateHTML(project, phase, start, end, qa, reportData, recurring) {
             </div>
         </div>
         <div class="totals-line">
-            Total Issues Identified: ${total.total} | Total Bugs: ${bugTotals.total}
+            Total Issues Identified: ${total.total} &nbsp;|&nbsp; Total Bugs: ${bugTotals.total} &nbsp;|&nbsp; Deviations: ${deviationTotals.total}
         </div>
 
         <h2>Issue Classification Matrix</h2>
@@ -247,6 +261,15 @@ function generateHTML(project, phase, start, end, qa, reportData, recurring) {
                     <td style="text-align: center"><span class="num-link">${bugTotals.p2}</span></td>
                     <td style="text-align: center"><span class="num-link">${bugTotals.p3}</span></td>
                     <td style="text-align: center"><span class="num-link">${bugTotals.p4}</span></td>
+                </tr>
+                <tr>
+                    <td>Deviations</td>
+                    <td style="text-align: center"><span class="num-link">${deviationTotals.total}</span></td>
+                    <td style="text-align: center"><span class="num-link">${deviationTotals.p0}</span></td>
+                    <td style="text-align: center"><span class="num-link">${deviationTotals.p1}</span></td>
+                    <td style="text-align: center"><span class="num-link">${deviationTotals.p2}</span></td>
+                    <td style="text-align: center"><span class="num-link">${deviationTotals.p3}</span></td>
+                    <td style="text-align: center"><span class="num-link">${deviationTotals.p4}</span></td>
                 </tr>
                 ${catKeys.map(cat => `
                     <tr>
