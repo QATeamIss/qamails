@@ -128,8 +128,8 @@ body {
 
 .container {
     width: 95%;
-    max-width: 900px;
-    margin: 40px auto;
+    max-width: 1120px;
+    margin: 20px auto;
 }
 
 /* Page Header & Theme Toggle */
@@ -240,12 +240,42 @@ body {
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.8);
     border-radius: 16px;
-    padding: 30px;
+    padding: 20px;
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
 }
 
+.form-layout-cols {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 24px;
+    align-items: stretch;
+}
+
+.form-col-left {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.form-col-right {
+    display: flex;
+    flex-direction: column;
+}
+
+.full-height-section {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0 !important;
+}
+
+.full-height-zone {
+    flex-grow: 1;
+    min-height: 250px !important;
+}
+
 .form-section {
-    margin-bottom: 30px;
+    margin-bottom: 16px;
 }
 
 .form-section h4 {
@@ -267,13 +297,13 @@ body {
 .form-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
+    gap: 12px;
 }
 
 .input-group {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 4px;
 }
 
 .input-group.full-width {
@@ -281,8 +311,9 @@ body {
 }
 
 .input-group label {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: var(--text);
+    font-weight: 500;
 }
 
 .input-wrapper {
@@ -312,9 +343,9 @@ body {
     background: var(--input-bg);
     border: 1px solid var(--border);
     border-radius: 8px;
-    padding: 12px 14px;
+    padding: 10px 12px;
     color: var(--text);
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     font-family: inherit;
     transition: border-color 0.2s, box-shadow 0.2s;
 }
@@ -565,8 +596,10 @@ body {
 
 /* Responsive */
 @media (max-width: 768px) {
+    .form-layout-cols { grid-template-columns: 1fr; }
     .form-grid { grid-template-columns: 1fr; }
     .input-group.full-width { grid-column: span 1; }
     .top-nav { padding: 15px 20px; }
     .page-header { flex-direction: column; align-items: flex-start; gap: 15px; }
+    .full-height-zone { min-height: 180px !important; }
 }

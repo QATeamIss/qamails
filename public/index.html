@@ -54,74 +54,75 @@
             <!-- Daily Report Section -->
             <section id="dailySection">
                 <form id="reportForm" class="glass-panel">
-                    
-                    <div class="form-section">
-                        <h4>Project Details</h4>
-                        <div class="form-grid">
-                            <div class="input-group">
-                                <label for="projectName">Project Name</label>
-                                <div class="input-wrapper">
-                                    <i class="ph ph-briefcase left-icon"></i>
-                                    <input type="text" id="projectName" placeholder="e.g., Quantum Industries" required>
+                    <div class="form-layout-cols">
+                        <!-- Left Column: Fields -->
+                        <div class="form-col-left">
+                            <div class="form-section">
+                                <h4>Report Settings</h4>
+                                <div class="form-grid">
+                                    <div class="input-group">
+                                        <label for="projectName">Project Name</label>
+                                        <div class="input-wrapper">
+                                            <i class="ph ph-briefcase left-icon"></i>
+                                            <input type="text" id="projectName" placeholder="e.g., Quantum Industries" required>
+                                        </div>
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="phase">Testing Phase</label>
+                                        <div class="input-wrapper">
+                                            <i class="ph ph-flask left-icon"></i>
+                                            <input type="text" id="phase" placeholder="e.g., Dev Test" required>
+                                        </div>
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="startDate">Start Date</label>
+                                        <div class="input-wrapper">
+                                            <input type="text" id="startDate" placeholder="e.g., 12 May 2026" required>
+                                            <i class="ph ph-calendar-blank right-icon"></i>
+                                        </div>
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="endDate">End Date</label>
+                                        <div class="input-wrapper">
+                                            <input type="text" id="endDate" placeholder="e.g., 13 May 2026" required>
+                                            <i class="ph ph-calendar-blank right-icon"></i>
+                                        </div>
+                                    </div>
+                                    <div class="input-group full-width">
+                                        <label for="qaName">QA Conducted By</label>
+                                        <div class="input-wrapper">
+                                            <i class="ph ph-user left-icon"></i>
+                                            <input type="text" id="qaName" placeholder="e.g., Abhiram P Mohan" required>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="input-group">
-                                <label for="phase">Testing Phase</label>
-                                <div class="input-wrapper">
-                                    <i class="ph ph-flask left-icon"></i>
-                                    <input type="text" id="phase" placeholder="e.g., Dev Test" required>
-                                </div>
-                            </div>
+                            
+                            <button type="submit" id="submitBtn" class="btn-primary">
+                                <span class="btn-text">Generate & Save Report</span>
+                                <i class="ph ph-sign-out"></i>
+                                <div class="loader"></div>
+                            </button>
                         </div>
-                    </div>
 
-                    <div class="form-section">
-                        <h4>Report Parameters</h4>
-                        <div class="form-grid">
-                            <div class="input-group">
-                                <label for="startDate">Start Date</label>
-                                <div class="input-wrapper">
-                                    <input type="text" id="startDate" placeholder="e.g., 12 May 2026" required>
-                                    <i class="ph ph-calendar-blank right-icon"></i>
-                                </div>
-                            </div>
-                            <div class="input-group">
-                                <label for="endDate">End Date</label>
-                                <div class="input-wrapper">
-                                    <input type="text" id="endDate" placeholder="e.g., 13 May 2026" required>
-                                    <i class="ph ph-calendar-blank right-icon"></i>
-                                </div>
-                            </div>
-                            <div class="input-group full-width">
-                                <label for="qaName">QA Conducted By</label>
-                                <div class="input-wrapper">
-                                    <i class="ph ph-user left-icon"></i>
-                                    <input type="text" id="qaName" placeholder="e.g., Abhiram P Mohan" required>
+                        <!-- Right Column: Textarea / Bug list -->
+                        <div class="form-col-right">
+                            <div class="form-section full-height-section">
+                                <h4>Step 2: Paste Issues List <i class="ph ph-info tooltip-icon"></i></h4>
+                                <div class="drag-drop-zone full-height-zone">
+                                    <textarea id="bugList" placeholder=" " required></textarea>
+                                    <div class="drag-drop-content">
+                                        <div class="zone-icons">
+                                            <i class="ph ph-file-text"></i>
+                                            <i class="ph ph-clipboard"></i>
+                                        </div>
+                                        <p>Drag & drop a file (.txt, .csv) or paste raw GitLab text here...</p>
+                                        <span>(Example: Issue ID | Title | Status)</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    <div class="form-section">
-                        <h4>Step 2: Paste Issues List <i class="ph ph-info tooltip-icon"></i></h4>
-                        <div class="drag-drop-zone">
-                            <textarea id="bugList" placeholder=" " required></textarea>
-                            <div class="drag-drop-content">
-                                <div class="zone-icons">
-                                    <i class="ph ph-file-text"></i>
-                                    <i class="ph ph-clipboard"></i>
-                                </div>
-                                <p>Drag & drop a file (.txt, .csv) or paste raw GitLab text here...</p>
-                                <span>(Example: Issue ID | Title | Status)</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <button type="submit" id="submitBtn" class="btn-primary">
-                        <span class="btn-text">Generate & Save Report</span>
-                        <i class="ph ph-sign-out"></i>
-                        <div class="loader"></div>
-                    </button>
                 </form>
             </section>
 
