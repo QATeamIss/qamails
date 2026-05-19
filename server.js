@@ -435,4 +435,45 @@ app.get('/api/records/:id', async (req, res) => {
     }
 });
 
+app.post('/api/weekly-report', async (req, res) => {
+    const { fromDate, toDate } = req.body;
+    if (!fromDate || !toDate) return res.status(400).json({ error: 'Missing dates' });
+    
+    try {
+        const { data: reports, error } = await supabase
+            .from('reports')
+            .select('*')
+            .gte('timestamp', `${fromDate}T00:00:00.000Z`)
+            .lte('timestamp', `${toDate}T23:59:59.999Z`);
+            
+        if (error) throw error;
+        
+        if (!reports || reports.length === 0) {
+            return res.status(404).json({ error: 'No reports found in this date range.' });
+        }
+
+        const combinedText = reports.map(r => r.raw_text || '').join('\\n\\n');
+        const reportData = parseBugs(combinedText);
+        
+        const recurringIssues = await findRecurringBugs(reportData.bugs);
+        
+        const uniqueProjects = [...new Set(reports.map(r => r.project_name))].join(', ') || 'Various Projects';
+        
+        const htmlContent = generateHTML(
+            uniqueProjects,
+            'Weekly QA Summary',
+            fromDate,
+            toDate,
+            'QA Team',
+            reportData,
+            recurringIssues
+        );
+        
+        res.json({ message: 'Success', reportContent: htmlContent });
+    } catch (e) {
+        console.error('Weekly report error:', e);
+        res.status(500).json({ error: 'Failed to generate weekly report.' });
+    }
+});
+
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
