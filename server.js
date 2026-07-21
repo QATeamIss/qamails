@@ -602,7 +602,8 @@ app.post('/api/weekly-report', async (req, res) => {
             .from('reports')
             .select('project_name, phase, timestamp, bugs')
             .lt('timestamp', `${isoFrom}T00:00:00.000Z`)
-            .order('timestamp', { ascending: false });
+            .order('timestamp', { ascending: false })
+            .limit(100);
 
         // 3. Find recurring bugs for this week's reports
         const recurringBugs = [];
@@ -662,3 +663,4 @@ app.post('/api/weekly-report', async (req, res) => {
 });
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+module.exports = app;
