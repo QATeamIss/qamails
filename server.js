@@ -370,6 +370,7 @@ async function findRecurringBugs(currentBugs) {
 }
 
 function getSimilarity(s1, s2) {
+    if (!s1 || !s2 || typeof s1 !== 'string' || typeof s2 !== 'string') return 0;
     const normalize = (str) => str.toLowerCase().replace(/[^\w\s]/g, '').split(/\s+/).filter(w => w.length > 2);
     const words1 = normalize(s1);
     const words2 = normalize(s2);
@@ -552,12 +553,23 @@ app.post('/api/weekly-report', async (req, res) => {
     const { fromDate, toDate } = req.body;
     if (!fromDate || !toDate) return res.status(400).json({ error: 'Missing dates' });
     
+    let isoFrom = fromDate;
+    let isoTo = toDate;
+    if (isoFrom.split('-')[0].length === 2) {
+        const [d, m, y] = isoFrom.split('-');
+        isoFrom = `${y}-${m}-${d}`;
+    }
+    if (isoTo.split('-')[0].length === 2) {
+        const [d, m, y] = isoTo.split('-');
+        isoTo = `${y}-${m}-${d}`;
+    }
+    
     try {
         const { data: reports, error } = await supabase
             .from('reports')
             .select('*')
-            .gte('timestamp', `${fromDate}T00:00:00.000Z`)
-            .lte('timestamp', `${toDate}T23:59:59.999Z`);
+            .gte('timestamp', `${isoFrom}T00:00:00.000Z`)
+            .lte('timestamp', `${isoTo}T23:59:59.999Z`);
             
         if (error) throw error;
         
@@ -589,7 +601,7 @@ app.post('/api/weekly-report', async (req, res) => {
         const { data: pastReports } = await supabase
             .from('reports')
             .select('project_name, phase, timestamp, bugs')
-            .lt('timestamp', `${fromDate}T00:00:00.000Z`)
+            .lt('timestamp', `${isoFrom}T00:00:00.000Z`)
             .order('timestamp', { ascending: false });
 
         // 3. Find recurring bugs for this week's reports
